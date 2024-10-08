@@ -236,20 +236,28 @@ void findShape(string info, int index) {
 }
 
 
-int main() {
-    Board board;
+void printMenu() {
     cout << "Hello, welcome to shapes blackboard! \n"
          << "Enter one of the commands: \n"
-         << "draw - Draw blackboard to the console \n"
-         << "list - Print all added shapes with their IDs and parameters \n"
-         << "shapes - Print a list of all available shapes and parameters for add call \n"
-         << "add - Add shape to the blackboard \n"
-         << "undo - Remove the last added shape from the blackboard\n"
-         << "clear - Remove all shapes from blackboard\n"
-         << "save - Save the blackboard to the file\n"
-         << "load - Load a blackboard from the file\n"
-         << "exit - Exit the program\n";
+         << "\t draw - Draw blackboard to the console \n"
+         << "\t list - Print all added shapes with their IDs and parameters \n"
+         << "\t shapes - Print a list of all available shapes and parameters for add call \n"
+         << "\t add - Add shape with specified colour and fill mode to the blackboard \n"
+         << "\t select - Select a shape with an ID or foreground shape by the selected coordinates \n"
+         << "\t remove - Remove the selected shape from the blackboard \n"
+         << "\t edit - Allows to modify the parameters of the selected figure \n"
+         << "\t paint - Change the colour of the selected figure \n"
+         << "\t move - Move the selected shape to the coordinates \n"
+         << "\t clear - Remove all shapes from blackboard \n"
+         << "\t save - Save the blackboard to the file \n"
+         << "\t load - Load a blackboard from the file \n"
+         << "\t exit - Exit the program \n";
+}
 
+
+int main() {
+    Board board;
+    printMenu();
     string input;
     while (true) {
         getline(cin, input);
