@@ -280,7 +280,9 @@ int main() {
             grid = vector<vector<char>>(BOARD_HEIGHT, vector<char>(BOARD_WIDTH, ' '));
         } else if (input == "list") {
             for (auto &shape: allShapes) {
-                cout << shape.first << shape.second << endl;
+                if (!shape.second.empty()) {
+                    cout << shape.first << shape.second << endl;
+                }
             }
         } else if (input == "undo") {
             string shape = allShapes[currentID-1];
