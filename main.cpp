@@ -254,6 +254,14 @@ void printMenu() {
          << "\t exit - Exit the program \n";
 }
 
+void printShapes() {
+    cout << "Before figure you should mention 'fill' or 'frame' mode, and colour of the figure\n"
+         << "triangle - coordinates of the top(upper) point and height of the triangle\n"
+         << "rectangle - coordinates of the upper left point and width height\n"
+         << "circle - coordinates of the center and radius\n"
+         << "square - coordinates of the upper left point and side length\n"
+         << "line - coordinates of start and end points\n";
+}
 
 int main() {
     Board board;
@@ -264,11 +272,7 @@ int main() {
         if (input == "draw") {
             board.print();
         } else if (input == "shapes") {
-            cout << "triangle - coordinates of the top(upper) point and height of the triangle\n"
-                 << "rectangle - coordinates of the upper left point and width height\n"
-                 << "circle - coordinates of the center and radius\n"
-                 << "square - coordinates of the upper left point and side length\n"
-                 << "line - coordinates of start and end points\n";
+            printShapes();
         } else if (input == "clear") {
             allShapes.clear();
             countOfStars.clear();
