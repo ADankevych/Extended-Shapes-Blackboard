@@ -9,6 +9,7 @@ const int BOARD_HEIGHT = 30;
 
 vector<vector<char>> grid(BOARD_HEIGHT, vector<char>(BOARD_WIDTH, ' '));
 map<int, map<int, int>> countOfStars;
+map<map<int, map<int, int>>, vector<string>> starsAndColors;
 map<int, string> allShapes;
 int currentID = 1;
 
@@ -303,44 +304,40 @@ void loadBoard(const string &fileName) {
 int main() {
     printMenu();
     Board board;
+    string input;
 
     while (true) {
-        cout << "\nEnter your command: ";
-        string command;
-        getline(cin, command);
+        cout << "\nEnter the command: ";
+        getline(cin, input);
 
-        if (command == "exit") {
+        if (input == "exit") {
             break;
-        } else if (command == "draw") {
+        } else if (input == "draw") {
             board.print();
-        } else if (command == "list") {
+        } else if (input == "list") {
             printAllShapes();
-        } else if (command == "shapes") {
+        } else if (input == "shapes") {
             printShapes();
-        } else if (command == "add") {
-            cout << "Enter the shape: ";
-            string shapeInput;
-            getline(cin, shapeInput);
-            findShape(shapeInput, 1);
-        } else if (command == "remove") {
-            cout << "Enter shape id: ";
-            int shapeID;
-            cin >> shapeID;
-            cin.ignore();
-            findShape(allShapes[shapeID].substr(1), -1);
-            allShapes.erase(shapeID);
-        } else if (command == "clear") {
+        } else if (input == "clear") {
             clearBoard();
-        } else if (command == "save") {
-            cout << "Enter file name to save: ";
-            string fileName;
-            getline(cin, fileName);
-            saveBoard(fileName);
-        } else if (command == "load") {
-            cout << "Enter file name to load: ";
-            string fileName;
-            getline(cin, fileName);
-            loadBoard(fileName);
+        } else {
+            int pos = input.find(' ');
+            string command = input.substr(0, pos);
+            string info = input.substr(pos + 1);
+
+            if (command == "add") {
+                findShape(info, 1);
+            }
+            else if (input == "remove") {
+                findShape(allShapes[stoi(info)], -1);
+                allShapes.erase(stoi(info));
+            }
+            else if (input == "save") {
+                saveBoard(info);
+            }
+            else if (input == "load") {
+                loadBoard(info);
+            }
         }
     }
 
