@@ -189,7 +189,6 @@ public:
             }
         }
     }
-
 };
 
 class Line : public Figure {
@@ -217,24 +216,24 @@ void findShape(string info, int index) {
     int pos = info.find(' ');
     string shape = info.substr(0, pos);
 
+    unique_ptr<Figure> figure;
+
     if (shape == "triangle") {
-        Triangle triangle;
-        triangle.draw(info.substr(pos+1), index);
+        figure = make_unique<Triangle>();
     } else if (shape == "rectangle") {
-        Rectangle rectangle;
-        rectangle.draw(info.substr(pos+1), index);
+        figure = make_unique<Rectangle>();
     } else if (shape == "circle") {
-        Circle circle;
-        circle.draw(info.substr(pos+1), index);
+        figure = make_unique<Circle>();
     } else if (shape == "square") {
-        Square square;
-        square.draw(info.substr(pos+1), index);
+        figure = make_unique<Square>();
     } else if (shape == "line") {
-        Line line;
-        line.draw(info.substr(pos+1), index);
+        figure = make_unique<Line>();
+    }
+
+    if (figure) {
+        figure->draw(info.substr(pos + 1), index);
     }
 }
-
 
 void printMenu() {
     cout << "Hello, welcome to shapes blackboard! \n"
@@ -263,72 +262,87 @@ void printShapes() {
          << "line - coordinates of start and end points\n";
 }
 
-int main() {
-    Board board;
-    printMenu();
-    string input;
-    while (true) {
-        getline(cin, input);
-        if (input == "draw") {
-            board.print();
-        } else if (input == "shapes") {
-            printShapes();
-        } else if (input == "clear") {
-            allShapes.clear();
-            countOfStars.clear();
-            currentID = 1;
-            grid = vector<vector<char>>(BOARD_HEIGHT, vector<char>(BOARD_WIDTH, ' '));
-        } else if (input == "list") {
-            for (auto &shape: allShapes) {
-                if (!shape.second.empty()) {
-                    cout << shape.first << shape.second << endl;
-                }
-            }
-        } else if (input == "undo") {
-            string shape = allShapes[currentID-1];
-            int pos = shape.find(' ');
-            shape = shape.substr(pos+1);
-            findShape(shape, -1);
-            allShapes.erase(currentID-1);
-            allShapes.erase(currentID-2);
-            currentID -= 2;
-        } else if (input == "exit") {
-            break;
-        } else {
-            int pos = input.find(' ');
-            string command = input.substr(0, pos);
-            string info = input.substr(pos + 1);
-            if (command == "add") {
-                findShape(info, 1);
-            } else if (command == "save") {
-                ofstream file(info);
-                for (auto &chars: grid) {
-                    for (char c: chars) {
-                        file << c;
-                    }
-                    file << endl;
-                }
-                file.close();
-            } else if (command == "load") {
-                try {
-                    ifstream file(info);
-                    string line;
-                    int i = 0;
-                    while (getline(file, line)) {
-                        for (int j = 0; j < line.size(); j++) {
-                            grid[i][j] = line[j];
-                        }
-                        i++;
-                    }
-                    file.close();
-                }
-                catch (exception &e) {
-                    cout << "OMG, here is some problem 0_0" << endl;
-                }
-            }
-        }
-
-        cout << endl;
+void printAllShapes() {
+    for (auto &[id, shape] : allShapes) {
+        cout << id << shape << "\n";
     }
+}
+
+void clearBoard() {
+    grid = vector<vector<char>>(BOARD_HEIGHT, vector<char>(BOARD_WIDTH, ' '));
+    countOfStars.clear();
+    allShapes.clear();
+    currentID = 1;
+}
+
+void saveBoard(const string &fileName) {
+    ofstream file(fileName);
+    for (int i = 0; i < BOARD_HEIGHT; i++) {
+        for (int j = 0; j < BOARD_WIDTH; j++) {
+            file << grid[i][j];
+        }
+        file << "\n";
+    }
+    file.close();
+}
+
+void loadBoard(const string &fileName) {
+    clearBoard();
+    ifstream file(fileName);
+    string line;
+    int i = 0;
+    while (getline(file, line) && i < BOARD_HEIGHT) {
+        for (int j = 0; j < min(static_cast<int>(line.size()), BOARD_WIDTH); j++) {
+            grid[i][j] = line[j];
+        }
+        i++;
+    }
+    file.close();
+}
+
+int main() {
+    printMenu();
+    Board board;
+
+    while (true) {
+        cout << "\nEnter your command: ";
+        string command;
+        getline(cin, command);
+
+        if (command == "exit") {
+            break;
+        } else if (command == "draw") {
+            board.print();
+        } else if (command == "list") {
+            printAllShapes();
+        } else if (command == "shapes") {
+            printShapes();
+        } else if (command == "add") {
+            cout << "Enter the shape: ";
+            string shapeInput;
+            getline(cin, shapeInput);
+            findShape(shapeInput, 1);
+        } else if (command == "remove") {
+            cout << "Enter shape id: ";
+            int shapeID;
+            cin >> shapeID;
+            cin.ignore();
+            findShape(allShapes[shapeID].substr(1), -1);
+            allShapes.erase(shapeID);
+        } else if (command == "clear") {
+            clearBoard();
+        } else if (command == "save") {
+            cout << "Enter file name to save: ";
+            string fileName;
+            getline(cin, fileName);
+            saveBoard(fileName);
+        } else if (command == "load") {
+            cout << "Enter file name to load: ";
+            string fileName;
+            getline(cin, fileName);
+            loadBoard(fileName);
+        }
+    }
+
     return 0;
 }
