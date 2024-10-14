@@ -12,6 +12,7 @@ map<int, map<int, int>> countOfStars;
 map<map<int, map<int, int>>, vector<string>> starsAndColors;
 map<int, string> allShapes;
 int currentID = 1;
+int selectedID = 0;
 
 void DeleteOrCreate(int x, int y, int index) {
     if (index == -1) {
@@ -71,13 +72,13 @@ struct Board {
 
 class Figure {
 public:
-    virtual void draw(string input, int index) = 0;
+    virtual void draw(string input, int deleteOrCreate, int fillOrFrame) = 0;
 
 };
 
 class Triangle : public Figure {
 public:
-    void draw(string input, int deleteOrCreate) override {
+    void draw(string input, int deleteOrCreate, int fillOrFrame) override {
         allShapes[currentID] = " triangle "+input;
         currentID++;
 
@@ -117,7 +118,7 @@ public:
 
 class Rectangle : public Figure {
 public:
-    void draw(string input, int deleteOrCreate) override {
+    void draw(string input, int deleteOrCreate, int fillOrFrame) override {
         allShapes[currentID] = " rectangle "+input;
         currentID++;
 
@@ -142,7 +143,7 @@ public:
 
 class Circle : public Figure {
 public:
-    void draw(string input, int deleteOrCreate) override {
+    void draw(string input, int deleteOrCreate, int fillOrFrame) override {
         allShapes[currentID] = " circle "+input;
         currentID++;
 
@@ -170,7 +171,7 @@ public:
 
 class Square : public Figure {
 public:
-    void draw(string input, int deleteOrCreate) override {
+    void draw(string input, int deleteOrCreate, int fillOrFrame) override {
         allShapes[currentID] = " square "+input;
         currentID++;
 
@@ -194,7 +195,7 @@ public:
 
 class Line : public Figure {
 public:
-    void draw(string input, int deleteOrCreate) override {
+    void draw(string input, int deleteOrCreate, int fillOrFrame) override {
         allShapes[currentID] = " line "+input;
         currentID++;
 
@@ -213,7 +214,7 @@ public:
 };
 
 
-void findShape(string info, int index) {
+void findShape(string info, int deleteOrCreate, int fillOrFrame) {
     int pos = info.find(' ');
     string shape = info.substr(0, pos);
 
@@ -232,7 +233,7 @@ void findShape(string info, int index) {
     }
 
     if (figure) {
-        figure->draw(info.substr(pos + 1), index);
+        figure->draw(info.substr(pos + 1), deleteOrCreate, fillOrFrame);
     }
 }
 
@@ -278,11 +279,8 @@ void clearBoard() {
 
 void saveBoard(const string &fileName) {
     ofstream file(fileName);
-    for (int i = 0; i < BOARD_HEIGHT; i++) {
-        for (int j = 0; j < BOARD_WIDTH; j++) {
-            file << grid[i][j];
-        }
-        file << "\n";
+    for (auto &[id, shape] : allShapes) {
+        file << id << shape << "\n";
     }
     file.close();
 }
@@ -291,12 +289,10 @@ void loadBoard(const string &fileName) {
     clearBoard();
     ifstream file(fileName);
     string line;
-    int i = 0;
-    while (getline(file, line) && i < BOARD_HEIGHT) {
-        for (int j = 0; j < min(static_cast<int>(line.size()), BOARD_WIDTH); j++) {
-            grid[i][j] = line[j];
-        }
-        i++;
+    while (getline(file, line)) {
+        int pos = line.find(' ');
+        int id = stoi(line.substr(0, pos));
+        allShapes[id] = line.substr(pos + 1);
     }
     file.close();
 }
@@ -326,10 +322,15 @@ int main() {
             string info = input.substr(pos + 1);
 
             if (command == "add") {
-                findShape(info, 1);
+                pos = info.find(' ');
+                string fillOrFrame = info.substr(0, pos);
+                info = info.substr(pos + 1);
+                pos = info.find(' ');
+                string color = info.substr(0, pos);
+                findShape(info, 1, fillOrFrame == "fill" ? 1 : 0);
             }
             else if (input == "remove") {
-                findShape(allShapes[stoi(info)], -1);
+// need to be realized
                 allShapes.erase(stoi(info));
             }
             else if (input == "save") {
