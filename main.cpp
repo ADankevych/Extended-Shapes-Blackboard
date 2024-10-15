@@ -518,18 +518,8 @@ int main() {
                 if (selectedID == 0) {
                     cout << "No shape selected" << endl;
                 } else {
-                    int pos = info.find(' ');
-                    string color = info.substr(0, pos);
-                    string remaindering = allShapes[selectedID].substr(allShapes[selectedID].find(' '));
-                    pos = remaindering.find(' ', remaindering.find(' ') + 1);
-                    remaindering = remaindering.substr(pos);
-
-                    allShapes[selectedID] = "fill " + color + remaindering;
-
-                    grid = vector<vector<string>>(BOARD_HEIGHT, vector<string>(BOARD_WIDTH, " "));
-                    for (auto &[id, shape] : allShapes) {
-                        findShape(shape, 0);
-                    }
+                    editShape("2 " + info);
+                    editShape("1 fill");
                 }
             }
             else if (command == "edit") {
