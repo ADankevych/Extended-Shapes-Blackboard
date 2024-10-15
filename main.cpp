@@ -319,19 +319,19 @@ void clearBoard() {
     currentID = 1;
 }
 
-void removeShape(string info) {
-    int id = stoi(info);
-    if (allShapes.find(id) == allShapes.end()) {
-        cout << "Shape with ID " << id << " does not exist." << endl;
-        return;
+void removeShape() {
+    allShapes.erase(selectedID);
+    grid = vector<vector<string>>(BOARD_HEIGHT, vector<string>(BOARD_WIDTH, " "));
+    for (auto &[id, shape] : allShapes) {
+        findShape(shape, 0);
     }
-    allShapes.erase(id);
+    selectedID = 0;
 }
 
 void saveBoard(const string &fileName) {
     ofstream file(fileName);
     for (auto &[id, shape] : allShapes) {
-        file << id << shape << "\n";
+        file << id << " " << shape << "\n";
     }
     file.close();
 }
@@ -351,6 +351,11 @@ void loadBoard(const string &fileName) {
         cout << "Invalid file format" << endl;
     }
     file.close();
+
+    grid = vector<vector<string>>(BOARD_HEIGHT, vector<string>(BOARD_WIDTH, " "));
+    for (auto &[id, shape] : allShapes) {
+        findShape(shape, 0);
+    }
 }
 
 bool pointsInside( int x, int y){
@@ -453,10 +458,16 @@ void editShape(string info) {
             pos = remaindering.find(' ');
             substring += remaindering.substr(0, pos + 1);
             remaindering = remaindering.substr(pos + 1);
-
         }
-        substring = substring + newParam + " " + remaindering.substr(remaindering.find(' ') + 1);
-        allShapes[selectedID] = substring;
+
+        pos = remaindering.find(' ');
+
+        if (pos != string::npos) {
+            remaindering = remaindering.substr(pos + 1);
+        } else {
+            remaindering = "";
+        }
+        allShapes[selectedID] = substring + newParam + (remaindering.empty() ? "" : " " + remaindering);
 
         grid = vector<vector<string>>(BOARD_HEIGHT, vector<string>(BOARD_WIDTH, " "));
         for (auto &[id, shape] : allShapes) {
@@ -485,6 +496,8 @@ int main() {
             printShapes();
         } else if (input == "clear") {
             clearBoard();
+        } else if (input == "remove") {
+            removeShape();
         } else {
             int pos = input.find(' ');
             string command = input.substr(0, pos);
@@ -492,14 +505,6 @@ int main() {
 
             if (command == "add") {
                 findShape(info, 1);
-            }
-            else if (command == "remove") {
-                removeShape(allShapes[selectedID]);
-                 grid = vector<vector<string>>(BOARD_HEIGHT, vector<string>(BOARD_WIDTH, " "));
-                for (auto &[id, shape] : allShapes) {
-                    findShape(shape, 0);
-                }
-
             }
             else if (command == "save") {
                 saveBoard(info);
