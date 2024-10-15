@@ -76,7 +76,6 @@ public:
 class Triangle : public Figure {
 public:
     void draw(string input, string fillOrFrame, string color) override {
-
         int x, y, height;
         lineParser(input, x, y, height);
 
@@ -107,6 +106,16 @@ public:
                 grid[baseY][baseX] = colorDictionary[color] + "*" + colorDictionary["reset"];
             }
         }
+
+        if (fillOrFrame == "fill") {
+            for (int i = 1; i < height; i++) {
+                for (int j = x - i + 1; j < x + i; j++) {
+                    if (i>=0 && j >= 0 && j < BOARD_WIDTH && y + i < BOARD_HEIGHT) {
+                        grid[y + i][j] = colorDictionary[color] + "*" + colorDictionary["reset"];
+                    }
+                }
+            }
+        }
     }
 
 };
@@ -130,6 +139,15 @@ public:
             }
         }
 
+        if (fillOrFrame == "fill") {
+            for (int i = y + 1; i < y + height - 1; i++) {
+                for (int j = x + 1; j < x + width - 1; j++) {
+                    if (i>=0 && j >= 0 && j < BOARD_WIDTH && i < BOARD_HEIGHT) {
+                        grid[i][j] = colorDictionary[color] + "*" + colorDictionary["reset"];
+                    }
+                }
+            }
+        }
     }
 };
 
@@ -150,6 +168,18 @@ public:
                    (i - y) * (i - y) + (j - x) * (j - x) >= (radius-0.5) * (radius-0.5) ) {
                     if(i >= 0 && i < BOARD_HEIGHT && j >= 0 && j < BOARD_WIDTH) {
                         grid[i][j] = colorDictionary[color] + "*" + colorDictionary["reset"];
+                    }
+                }
+            }
+        }
+
+        if (fillOrFrame == "fill") {
+            for (int i = y - radius + 1; i < y + radius; i++) {
+                for (int j = x - radius + 1; j < x + radius; j++) {
+                    if ((i - y) * (i - y) + (j - x) * (j - x) <= radius * radius) {
+                        if (i >= 0 && i < BOARD_HEIGHT && j >= 0 && j < BOARD_WIDTH) {
+                            grid[i][j] = colorDictionary[color] + "*" + colorDictionary["reset"];
+                        }
                     }
                 }
             }
@@ -176,6 +206,16 @@ public:
                 }
             }
         }
+
+        if (fillOrFrame == "fill") {
+            for (int i = y + 1; i < y + length - 1; i++) {
+                for (int j = x + 1; j < x + length - 1; j++) {
+                    if (i >= 0 && i < BOARD_HEIGHT && j >= 0 && j < BOARD_WIDTH) {
+                        grid[i][j] = colorDictionary[color] + "*" + colorDictionary["reset"];
+                    }
+                }
+            }
+        }
     }
 };
 
@@ -192,8 +232,17 @@ public:
                 grid[y][x] = colorDictionary[color] + "*" + colorDictionary["reset"];
             }
         }
-    }
 
+        if (fillOrFrame == "fill") {
+            for (int i = 0; i < max(abs(xEnd - xStart), abs(yEnd - yStart)); i++) {
+                int x = xStart + ((xEnd - xStart) * i) / max(abs(xEnd - xStart), abs(yEnd - yStart));
+                int y = yStart + ((yEnd - yStart) * i) / max(abs(xEnd - xStart), abs(yEnd - yStart));
+                if (x >= 0 && x < BOARD_WIDTH && y >= 0 && y < BOARD_HEIGHT) {
+                    grid[y][x] = colorDictionary[color] + "*" + colorDictionary["reset"];
+                }
+            }
+        }
+    }
 };
 
 
@@ -260,7 +309,7 @@ void printShapes() {
 
 void printAllShapes() {
     for (auto &[id, shape] : allShapes) {
-        cout << id << shape << "\n";
+        cout << id << " " << shape << "\n";
     }
 }
 
