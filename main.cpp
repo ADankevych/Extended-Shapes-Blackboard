@@ -520,7 +520,12 @@ int main() {
                 } else {
                     int pos = info.find(' ');
                     string color = info.substr(0, pos);
-                    allShapes[selectedID] = color + allShapes[selectedID].substr(allShapes[selectedID].find(' '));
+                    string remaindering = allShapes[selectedID].substr(allShapes[selectedID].find(' '));
+                    pos = remaindering.find(' ', remaindering.find(' ') + 1);
+                    remaindering = remaindering.substr(pos);
+
+                    allShapes[selectedID] = "fill " + color + remaindering;
+
                     grid = vector<vector<string>>(BOARD_HEIGHT, vector<string>(BOARD_WIDTH, " "));
                     for (auto &[id, shape] : allShapes) {
                         findShape(shape, 0);
