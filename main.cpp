@@ -23,6 +23,8 @@ vector<vector<string>> grid(BOARD_HEIGHT, vector<string>(BOARD_WIDTH, " "));
 map<int, string> allShapes;
 int currentID = 1;
 int selectedID = 0;
+int selectedX = 0;
+int selectedY = 0;
 
 
 void lineParser(string &input, int &x, int &y, int &z) {
@@ -353,6 +355,93 @@ void loadBoard(const string &fileName) {
     file.close();
 }
 
+bool pointsInside( int x, int y){
+    for (auto &[id, shape] : allShapes) {
+        int pos = shape.find(' ');
+        string fillOrFrame = shape.substr(0, pos);
+        string remaining = shape.substr(pos + 1);
+        pos = remaining.find(' ');
+        string color = remaining.substr(0, pos);
+        remaining = remaining.substr(pos + 1);
+        pos = remaining.find(' ');
+        string shapeType = remaining.substr(0, pos);
+        remaining = remaining.substr(pos + 1);
+        int x1, y1;
+
+        if (shapeType == "triangle") {
+            int height;
+            lineParser(remaining, x1, y1, height);
+
+            if (x >= x1 - height && x <= x1 + height && y >= y1 && y <= y1 + height) {
+                selectedID = id;
+                return true;
+            }
+        } else if (shapeType == "rectangle") {
+            int width, height;
+            lineParserFourElements(remaining, x1, y1, width, height);
+
+            if (x >= x1 && x <= x1 + width && y >= y1 && y <= y1 + height) {
+                selectedID = id;
+                return true;
+            }
+        } else if (shapeType == "circle") {
+            int radius;
+            lineParser(remaining, x1, y1, radius);
+
+            if ((x - x1) * (x - x1) + (y - y1) * (y - y1) <= radius * radius) {
+                selectedID = id;
+                return true;
+            }
+        } else if (shapeType == "square") {
+            int length;
+            lineParser(remaining, x1, y1, length);
+
+            if (x >= x1 && x <= x1 + length && y >= y1 && y <= y1 + length) {
+                selectedID = id;
+                return true;
+            }
+        } else if (shapeType == "line") {
+            int x2, y2;
+            lineParserFourElements(remaining, x1, y1, x2, y2);
+
+            if (x >= min(x1, x2) && x <= max(x1, x2) && y >= min(y1, y2) && y <= max(y1, y2)) {
+                selectedID = id;
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+void selectShape(string info) {
+    int pos = info.find(' ');
+    if (pos == -1) {
+        int id = stoi(info);
+        if (allShapes.find(id) == allShapes.end()) {
+            cout << "Shape with ID " << id << " does not exist." << endl;
+            return;
+        }
+        selectedID = id;
+    } else {
+        int x = stoi(info.substr(0, pos));
+        int y = stoi(info.substr(pos + 1));
+
+        if (x >= 0 && x < BOARD_WIDTH && y >= 0 && y < BOARD_HEIGHT) {
+            selectedID = 0;
+            selectedX = x;
+            selectedY = y;
+            if (pointsInside(x, y)) {
+                cout << "Selected: " << selectedID << " " << allShapes[selectedID] << endl;
+            } else {
+                cout << "No shape selected" << endl;
+            }
+        } else {
+            cout << "Invalid coordinates" << endl;
+        }
+    }
+}
+
 int main() {
     printMenu();
     Board board;
@@ -382,7 +471,6 @@ int main() {
             }
             else if (command == "remove") {
                 removeShape(info);
-
                  grid = vector<vector<string>>(BOARD_HEIGHT, vector<string>(BOARD_WIDTH, " "));
                 for (auto &[id, shape] : allShapes) {
                     findShape(shape, 0);
@@ -394,6 +482,9 @@ int main() {
             }
             else if (command == "load") {
                 loadBoard(info);
+            }
+            else if (command == "select") {
+                selectShape(info);
             }
         }
     }
