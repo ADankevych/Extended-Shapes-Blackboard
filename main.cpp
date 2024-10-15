@@ -23,8 +23,6 @@ vector<vector<string>> grid(BOARD_HEIGHT, vector<string>(BOARD_WIDTH, " "));
 map<int, string> allShapes;
 int currentID = 1;
 int selectedID = 0;
-int selectedX = 0;
-int selectedY = 0;
 
 
 void lineParser(string &input, int &x, int &y, int &z) {
@@ -429,8 +427,6 @@ void selectShape(string info) {
 
         if (x >= 0 && x < BOARD_WIDTH && y >= 0 && y < BOARD_HEIGHT) {
             selectedID = 0;
-            selectedX = x;
-            selectedY = y;
             if (pointsInside(x, y)) {
                 cout << "Selected: " << selectedID << " " << allShapes[selectedID] << endl;
             } else {
@@ -527,6 +523,14 @@ int main() {
                     cout << "No shape selected" << endl;
                 } else {
                     editShape(info);
+                }
+            }
+            else if (command == "move") {
+                if (selectedID == 0) {
+                    cout << "No shape selected" << endl;
+                } else {
+                    editShape("4 " + info.substr(0, info.find(' ')));
+                    editShape("5 " + info.substr(info.find(' ') + 1));
                 }
             }
         }
