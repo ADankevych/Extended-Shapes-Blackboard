@@ -442,6 +442,34 @@ void selectShape(string info) {
     }
 }
 
+void editShape(string info) {
+    int positionOfParam = stoi(info.substr(0, info.find(' ')));
+    string newParam = info.substr(info.find(' ') + 1);
+    if (positionOfParam == 3){
+        cout << "You can't change the shape type" << endl;
+    } else {
+        int i = 0;
+        int pos = 0;
+        string substring = "";
+        string remaindering = allShapes[selectedID];
+        while (i < positionOfParam - 1){
+            i++;
+            pos = remaindering.find(' ');
+            substring += remaindering.substr(0, pos + 1);
+            remaindering = remaindering.substr(pos + 1);
+
+        }
+        substring = substring + newParam + " " + remaindering.substr(remaindering.find(' ') + 1);
+        allShapes[selectedID] = substring;
+
+        grid = vector<vector<string>>(BOARD_HEIGHT, vector<string>(BOARD_WIDTH, " "));
+        for (auto &[id, shape] : allShapes) {
+            findShape(shape, 0);
+        }
+    }
+}
+
+
 int main() {
     printMenu();
     Board board;
@@ -470,7 +498,7 @@ int main() {
                 findShape(info, 1);
             }
             else if (command == "remove") {
-                removeShape(info);
+                removeShape(allShapes[selectedID]);
                  grid = vector<vector<string>>(BOARD_HEIGHT, vector<string>(BOARD_WIDTH, " "));
                 for (auto &[id, shape] : allShapes) {
                     findShape(shape, 0);
@@ -485,6 +513,26 @@ int main() {
             }
             else if (command == "select") {
                 selectShape(info);
+            }
+            else if (command == "paint") {
+                if (selectedID == 0) {
+                    cout << "No shape selected" << endl;
+                } else {
+                    int pos = info.find(' ');
+                    string color = info.substr(0, pos);
+                    allShapes[selectedID] = color + allShapes[selectedID].substr(allShapes[selectedID].find(' '));
+                    grid = vector<vector<string>>(BOARD_HEIGHT, vector<string>(BOARD_WIDTH, " "));
+                    for (auto &[id, shape] : allShapes) {
+                        findShape(shape, 0);
+                    }
+                }
+            }
+            else if (command == "edit") {
+                if (selectedID == 0) {
+                    cout << "No shape selected" << endl;
+                } else {
+                    editShape(info);
+                }
             }
         }
     }
