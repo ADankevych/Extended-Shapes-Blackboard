@@ -7,25 +7,22 @@ using namespace std;
 const int BOARD_WIDTH = 90;
 const int BOARD_HEIGHT = 30;
 
-vector<vector<char>> grid(BOARD_HEIGHT, vector<char>(BOARD_WIDTH, ' '));
-map<int, map<int, int>> countOfStars;
-map<map<int, map<int, int>>, vector<string>> starsAndColors;
+map<string, string> colorDictionary = { // taken from AI
+        {"reset", "\033[0m"},
+        {"black", "\033[30m"},
+        {"red", "\033[31m"},
+        {"green", "\033[32m"},
+        {"yellow", "\033[33m"},
+        {"blue", "\033[34m"},
+        {"magenta", "\033[35m"},
+        {"cyan", "\033[36m"},
+        {"white", "\033[37m"}
+};
+
+vector<vector<string>> grid(BOARD_HEIGHT, vector<string>(BOARD_WIDTH, " "));
 map<int, string> allShapes;
 int currentID = 1;
 int selectedID = 0;
-
-void DeleteOrCreate(int x, int y, int index) {
-    if (index == -1) {
-        countOfStars[x][y]--;
-        if (countOfStars[x][y] == 0) {
-            grid[x][y] = ' ';
-        }
-    } else {
-        countOfStars[x][y]++;
-        grid[x][y] = '*';
-
-    }
-}
 
 
 void lineParser(string &input, int &x, int &y, int &z) {
@@ -58,7 +55,7 @@ struct Board {
         cout << "\n";
         for (auto &row: grid) {
             cout << "|";
-            for (char c: row) {
+            for (string c: row) {
                 cout << c;
             }
             cout << "|\n";
@@ -72,15 +69,13 @@ struct Board {
 
 class Figure {
 public:
-    virtual void draw(string input, int deleteOrCreate, int fillOrFrame) = 0;
+    virtual void draw(string input, string fillOrFrame, string color) = 0;
 
 };
 
 class Triangle : public Figure {
 public:
-    void draw(string input, int deleteOrCreate, int fillOrFrame) override {
-        allShapes[currentID] = " triangle "+input;
-        currentID++;
+    void draw(string input, string fillOrFrame, string color) override {
 
         int x, y, height;
         lineParser(input, x, y, height);
@@ -97,10 +92,10 @@ public:
 
             if (posY < BOARD_HEIGHT) {
                 if (leftMost >= 0 && leftMost < BOARD_WIDTH) {
-                    DeleteOrCreate(posY, leftMost, deleteOrCreate);
+                    grid[posY][leftMost] = colorDictionary[color] + "*" + colorDictionary["reset"];
                 }
                 if (rightMost >= 0 && rightMost < BOARD_WIDTH && leftMost != rightMost) {
-                    DeleteOrCreate(posY, rightMost, deleteOrCreate);
+                    grid[posY][rightMost] = colorDictionary[color] + "*" + colorDictionary["reset"];
                 }
             }
         }
@@ -109,7 +104,7 @@ public:
             int baseY = y + height - 1;
 
             if (baseX >= 0 && baseX < BOARD_WIDTH && baseY < BOARD_HEIGHT) {
-                DeleteOrCreate(baseY, baseX, deleteOrCreate);
+                grid[baseY][baseX] = colorDictionary[color] + "*" + colorDictionary["reset"];
             }
         }
     }
@@ -118,10 +113,7 @@ public:
 
 class Rectangle : public Figure {
 public:
-    void draw(string input, int deleteOrCreate, int fillOrFrame) override {
-        allShapes[currentID] = " rectangle "+input;
-        currentID++;
-
+    void draw(string input, string fillOrFrame, string color) override {
         int x, y, width, height;
         lineParserFourElements(input, x, y, width, height);
 
@@ -133,7 +125,7 @@ public:
         for(int i = y; i < y + height; i++) {
             for(int j = x; j < x + width; j++) {
                 if(i == y || i == y + height - 1 || j == x || j == x + width - 1) {
-                    DeleteOrCreate(i, j, deleteOrCreate);
+                    grid[i][j] = colorDictionary[color] + "*" + colorDictionary["reset"];
                 }
             }
         }
@@ -143,10 +135,7 @@ public:
 
 class Circle : public Figure {
 public:
-    void draw(string input, int deleteOrCreate, int fillOrFrame) override {
-        allShapes[currentID] = " circle "+input;
-        currentID++;
-
+    void draw(string input, string fillOrFrame, string color) override {
         int x, y, radius;
         lineParser(input, x, y, radius);
 
@@ -160,7 +149,7 @@ public:
                 if((i - y) * (i - y) + (j - x) * (j - x) <= radius * radius &&
                    (i - y) * (i - y) + (j - x) * (j - x) >= (radius-0.5) * (radius-0.5) ) {
                     if(i >= 0 && i < BOARD_HEIGHT && j >= 0 && j < BOARD_WIDTH) {
-                        DeleteOrCreate(i, j, deleteOrCreate);
+                        grid[i][j] = colorDictionary[color] + "*" + colorDictionary["reset"];
                     }
                 }
             }
@@ -171,10 +160,7 @@ public:
 
 class Square : public Figure {
 public:
-    void draw(string input, int deleteOrCreate, int fillOrFrame) override {
-        allShapes[currentID] = " square "+input;
-        currentID++;
-
+    void draw(string input, string fillOrFrame, string color) override {
         int x, y, length;
         lineParser(input, x, y, length);
 
@@ -186,7 +172,7 @@ public:
         for(int i = y; i < y + length; i++) {
             for(int j = x; j < x + length; j++) {
                 if(i == y || i == y + length - 1 || j == x || j == x + length - 1) {
-                    DeleteOrCreate(i, j, deleteOrCreate);
+                    grid[i][j] = colorDictionary[color] + "*" + colorDictionary["reset"];
                 }
             }
         }
@@ -195,10 +181,7 @@ public:
 
 class Line : public Figure {
 public:
-    void draw(string input, int deleteOrCreate, int fillOrFrame) override {
-        allShapes[currentID] = " line "+input;
-        currentID++;
-
+    void draw(string input, string fillOrFrame, string color) override {
         int xStart, yStart, xEnd, yEnd;
         lineParserFourElements(input, xStart, yStart, xEnd, yEnd);
 
@@ -206,7 +189,7 @@ public:
             int x = xStart + ((xEnd - xStart) * i) / max(abs(xEnd - xStart), abs(yEnd - yStart));
             int y = yStart + ((yEnd - yStart) * i) / max(abs(xEnd - xStart), abs(yEnd - yStart));
             if (x >= 0 && x < BOARD_WIDTH && y >= 0 && y < BOARD_HEIGHT) {
-                DeleteOrCreate(y, x, deleteOrCreate);
+                grid[y][x] = colorDictionary[color] + "*" + colorDictionary["reset"];
             }
         }
     }
@@ -214,9 +197,15 @@ public:
 };
 
 
-void findShape(string info, int deleteOrCreate, int fillOrFrame) {
+void findShape(string info, int createOrRewrite) {
     int pos = info.find(' ');
-    string shape = info.substr(0, pos);
+    string fillOrFrame = info.substr(0, pos);
+    string remaining = info.substr(pos + 1);
+    pos = remaining.find(' ');
+    string color = remaining.substr(0, pos);
+    remaining = remaining.substr(pos + 1);
+    pos = remaining.find(' ');
+    string shape = remaining.substr(0, pos);
 
     unique_ptr<Figure> figure;
 
@@ -232,8 +221,13 @@ void findShape(string info, int deleteOrCreate, int fillOrFrame) {
         figure = make_unique<Line>();
     }
 
+    if (createOrRewrite == 1) {
+        allShapes[currentID] = info;
+        currentID++;
+    }
+
     if (figure) {
-        figure->draw(info.substr(pos + 1), deleteOrCreate, fillOrFrame);
+        figure->draw(remaining.substr(pos + 1), fillOrFrame, color);
     }
 }
 
@@ -271,10 +265,18 @@ void printAllShapes() {
 }
 
 void clearBoard() {
-    grid = vector<vector<char>>(BOARD_HEIGHT, vector<char>(BOARD_WIDTH, ' '));
-    countOfStars.clear();
+    grid = vector<vector<string>>(BOARD_HEIGHT, vector<string>(BOARD_WIDTH, " "));
     allShapes.clear();
     currentID = 1;
+}
+
+void removeShape(string info) {
+    int id = stoi(info);
+    if (allShapes.find(id) == allShapes.end()) {
+        cout << "Shape with ID " << id << " does not exist." << endl;
+        return;
+    }
+    allShapes.erase(id);
 }
 
 void saveBoard(const string &fileName) {
@@ -288,11 +290,16 @@ void saveBoard(const string &fileName) {
 void loadBoard(const string &fileName) {
     clearBoard();
     ifstream file(fileName);
-    string line;
-    while (getline(file, line)) {
-        int pos = line.find(' ');
-        int id = stoi(line.substr(0, pos));
-        allShapes[id] = line.substr(pos + 1);
+    try {
+        string line;
+        while (getline(file, line)) {
+            int pos = line.find(' ');
+            int id = stoi(line.substr(0, pos));
+            allShapes[id] = line.substr(pos + 1);
+        }
+    }
+    catch (exception &error) {
+        cout << "Invalid file format" << endl;
     }
     file.close();
 }
@@ -322,21 +329,21 @@ int main() {
             string info = input.substr(pos + 1);
 
             if (command == "add") {
-                pos = info.find(' ');
-                string fillOrFrame = info.substr(0, pos);
-                info = info.substr(pos + 1);
-                pos = info.find(' ');
-                string color = info.substr(0, pos);
-                findShape(info, 1, fillOrFrame == "fill" ? 1 : 0);
+                findShape(info, 1);
             }
-            else if (input == "remove") {
-// need to be realized
-                allShapes.erase(stoi(info));
+            else if (command == "remove") {
+                removeShape(info);
+
+                 grid = vector<vector<string>>(BOARD_HEIGHT, vector<string>(BOARD_WIDTH, " "));
+                for (auto &[id, shape] : allShapes) {
+                    findShape(shape, 0);
+                }
+
             }
-            else if (input == "save") {
+            else if (command == "save") {
                 saveBoard(info);
             }
-            else if (input == "load") {
+            else if (command == "load") {
                 loadBoard(info);
             }
         }
